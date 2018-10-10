@@ -16,6 +16,7 @@ TEST(BWT, file)
     while(getline(ifs, str))
     {
         cout<<"**************** CASE "<<c++<<" *********************"<<endl;
+        cout<<str<<endl;
         
         str.push_back(0);
         Aligner a(str);
