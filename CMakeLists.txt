@@ -1,18 +1,18 @@
-project(BWT_test)
+cmake_minimum_required(VERSION 3.10)
 
-# for BWT.hpp
-include_directories(${PROJECT_SOURCE_DIR})
-# for submodule suffix array
-include_directories("${PROJECT_SOURCE_DIR}/include")
+# for header files
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+# for header files of suffix array
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 # copy test data
 file(COPY
-  "${PROJECT_SOURCE_DIR}/unit_test/test_data"
-  DESTINATION "${PROJECT_BINARY_DIR}/unit_test/"
+  "${CMAKE_CURRENT_SOURCE_DIR}/unit_test/test_data"
+  DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/unit_test/"
   )
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_FLAGS  "-std=c++17")
+project(BWT_test)
 add_executable(BWT_test unit_test/BWT_test.cpp)
 target_link_libraries(BWT_test gtest pthread gtest_main)
-
