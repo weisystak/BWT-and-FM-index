@@ -1,4 +1,9 @@
-# BWT-and-FM-index
+# BWT and FM index
+
+
+## How to build
+**prerequisite**
+[google test](https://github.com/google/googletest) 
 
 ```bash
 git clone https://github.com/weisystak/BWT-and-FM-index.git
