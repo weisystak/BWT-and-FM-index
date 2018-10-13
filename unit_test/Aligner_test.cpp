@@ -1,4 +1,4 @@
-#include <BWT.hpp>
+#include <Aligner.hpp>
 #include <gtest/gtest.h>
 #include <fstream>
 
@@ -53,7 +53,7 @@ vector<int> query(vector<int>& SA, string& str, string& q)
 }
 
 
-TEST(BWT, file1)
+TEST(BWT, file1_normal)
 {
     ifstream ifs("unit_test/test_data/article.txt");
     string str;
@@ -67,15 +67,49 @@ TEST(BWT, file1)
 
         str.push_back(0);
         Aligner a(str);
-        vector<string> querys = { "t", "th", "the", ".", "s.", "Th", "northeastern" }; 
+        vector<string> querys = { "t", "th", "the"};
         
+        auto v = string_to_vector(str);
+        auto sa = DC3(v);
+
         for(auto q: querys)
         {
             auto ans = a.query(q);
-            auto ep = query(a.SA, str, q);
+            auto ep = query(sa, str, q);
             EXPECT_EQ(ep, ans);
         }
-        //print_result(a, str, querys);
+        print_result(a, str, querys);
+            
+    }
+}
+
+TEST(BWT, file1_boundary_case)
+{
+    ifstream ifs("unit_test/test_data/article.txt");
+    string str;
+    
+    int c = 0;
+
+    while(getline(ifs, str))
+    {
+        cout<<"**************** CASE "<<c++<<" *********************"<<endl;
+        cout<<str<<endl;
+
+        str.push_back(0);
+        cout<<str.length()<<endl;
+        Aligner a(str);
+        vector<string> querys = {  ".", "s.", "Th", "ere" }; 
+        
+        auto v = string_to_vector(str);
+        auto sa = DC3(v);
+
+        for(auto q: querys)
+        {
+            auto ans = a.query(q);
+            auto ep = query(sa, str, q);
+            EXPECT_EQ(ep, ans);
+        }
+        print_result(a, str, querys);
             
     }
 }
@@ -98,10 +132,12 @@ TEST(BWT, file2)
         "DAGCANEACDCCDNAECCGNRACACQAQQNRERCEGQGGNCQARADDQRDQNCNANRGACCQEANG",
          "AN", "CCRDG", "NEEQ" }; 
         
+        auto v = string_to_vector(str);
+        auto sa = DC3(v);
         for(auto q: querys)
         {
             auto ans = a.query(q);
-            auto ep = query(a.SA, str, q);
+            auto ep = query(sa, str, q);
             EXPECT_EQ(ep, ans);
         }
         print_result(a, str, querys);

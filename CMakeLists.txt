@@ -13,6 +13,6 @@ file(COPY
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_FLAGS  "-std=c++17")
-project(BWT_test)
-add_executable(BWT_test unit_test/BWT_test.cpp)
-target_link_libraries(BWT_test gtest pthread gtest_main)
+project(Aligner_test)
+add_executable(Aligner_test unit_test/Aligner_test.cpp)
+target_link_libraries(Aligner_test gtest pthread gtest_main)

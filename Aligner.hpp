@@ -16,12 +16,13 @@ class Aligner
     void build(string& str)
     {
         assert(str.length() != 0);
-
+        
         vector<int> s(str.length());
         for(int i = 0; i<str.length(); i++)
             s[i] = str[i];
         
         SA = DC3(s);
+        
 
         // init L
         L.clear();
@@ -33,11 +34,25 @@ class Aligner
             else
                 L += str[i-1];
         
+        // shrink SA
+        int ll=0;
+        for(int i = 0; i< SA.size(); i+=e)
+        {
+            SA[ll++] = SA[i];
+        }
+    
+        SA.resize(ll);
+        SA.shrink_to_fit();
+
+
         // build tally table
         int tally_len = 1 + L.length()/z;
+        if(L.length() % z == 0) tally_len--;
+
         for(int j = 0; j < 256; j++)
         {
             tally[j].resize( tally_len );
+            tally[j].shrink_to_fit();
             // init tally
             for(auto& i: tally[j])
                 i = 0;
@@ -75,9 +90,23 @@ class Aligner
         }
     }
     
-    friend ostream& operator<<(ostream& out, Aligner a)
-    {
-
+    int deduce_idx(int i)
+    {  
+        int ch, s;
+        int cnt = 0;
+        while(i % e != 0)
+        {
+            ch = L[i];
+            
+            s =  tally[ ch ][(i-1)/z];
+            s  += tally_offset(ch, i-1);
+            
+            i = F[ ch-1 ] + s;
+            cnt++;
+        }
+        if(i/e == 0)    // boundary case: reach '$'
+            return cnt-1;
+        return SA[i/e] + cnt;
     }
 
     int tally_offset(int ch, int i)
@@ -93,6 +122,7 @@ class Aligner
     vector<int> search(string& str, int I, int a, int b)
     {
         int i = str[I];
+        assert(i != 0);
 
         // [start, end) of F
         int f, ff;
@@ -103,7 +133,14 @@ class Aligner
         if( !(ff>f) )
             return {};
         else if( I == 0 )
-            return { begin(SA)+f, begin(SA)+ff };
+        {
+            vector<int> res;
+            for(int i = f; i < ff; i++)
+                res.push_back(deduce_idx(i));
+            
+            return res;
+        }
+            
 
         // str[I-1] range of a~b in L
         int s, ss;
@@ -131,7 +168,13 @@ class Aligner
         if( !(b>a) )
             return {};
         else if( I == 0)
-            return { begin(SA)+a, begin(SA)+b };
+        {
+            vector<int> res;
+            for(int i = a; i < b; i++)
+                res.push_back(deduce_idx(i));
+            
+            return res;
+        }
 
         // str[I-1] range of a~b in L
         int s, ss;
