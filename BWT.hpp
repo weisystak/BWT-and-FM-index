@@ -1,6 +1,8 @@
 #pragma once
 #include "suffix_array/DC3.hpp"
-#define k 256
+#define k 256   // number of characters
+#define z 15     // tally table factor
+#define e 5     // SA factor
 
 class Aligner
 {
@@ -13,6 +15,8 @@ class Aligner
 
     void build(string& str)
     {
+        assert(str.length() != 0);
+
         vector<int> s(str.length());
         for(int i = 0; i<str.length(); i++)
             s[i] = str[i];
@@ -30,9 +34,10 @@ class Aligner
                 L += str[i-1];
         
         // build tally table
+        int tally_len = 1 + L.length()/z;
         for(int j = 0; j < 256; j++)
         {
-            tally[j].resize(L.length());
+            tally[j].resize( tally_len );
             // init tally
             for(auto& i: tally[j])
                 i = 0;
@@ -41,13 +46,17 @@ class Aligner
         tally[ L[0] ][0]++;
 
 
-        for(int i = 1; i < L.length(); i++)
+        for(int i = 1, ii = 1; i < L.length(); i++)
         {
-            for(int j = 0; j < 256; j++)
+            tally[ L[i] ][ii]++;
+            if(i % z == 0)
             {
-                tally[j][i] = tally[j][i-1];
+                for(int j = 0; j < 256; j++)
+                    tally[j][ii] += tally[j][ii-1];
+                ii++;
+                if(ii == tally_len)
+                    break;
             }
-            tally[ L[i] ][i]++;
         }
         
         // init F
@@ -71,6 +80,16 @@ class Aligner
 
     }
 
+    int tally_offset(int ch, int i)
+    {
+        int r = i%z, off = 0;
+        int base = i-r+1;
+        for(int j = 0; j < r; j++)
+            if( ch == L[ base+j ])
+                off++;
+        return off;
+    }
+
     vector<int> search(string& str, int I, int a, int b)
     {
         int i = str[I];
@@ -88,9 +107,11 @@ class Aligner
 
         // str[I-1] range of a~b in L
         int s, ss;
-        s =  tally[ str[I-1] ][f-1];
-        ss = tally[ str[I-1] ][ff-1];
+        s =  tally[ str[I-1] ][(f-1)/z];
+        ss = tally[ str[I-1] ][(ff-1)/z];
 
+        s  += tally_offset(str[I-1], f-1);
+        ss += tally_offset(str[I-1], ff-1);
 
         return search(str, I-1, s, ss);
 
@@ -100,6 +121,7 @@ class Aligner
     {
         int I = str.length()-1;
         int i = str[I];
+        assert(i != 0);
         // [start, end) of F
         int a, b;
          
@@ -113,8 +135,11 @@ class Aligner
 
         // str[I-1] range of a~b in L
         int s, ss;
-        s =  tally[ str[I-1] ][a-1];
-        ss = tally[ str[I-1] ][b-1];
+        s =  tally[ str[I-1] ][(a-1)/z];
+        ss = tally[ str[I-1] ][(b-1)/z];
+
+        s  += tally_offset(str[I-1], a-1);
+        ss += tally_offset(str[I-1], b-1);
 
 
         return search(str, I-1, s, ss);
