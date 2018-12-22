@@ -36,7 +36,7 @@ class Aligner
                 L += char(0);   // sentinel
             else
                 L += str[i-1];
-        
+
         // shrink SA
         int ll=0;
         for(int i = 0; i< SA.size(); i+=e)
@@ -46,20 +46,24 @@ class Aligner
     
         SA.resize(ll);
         SA.shrink_to_fit();
-
+    
 
         // build tally table
         int tally_len = 1 + L.length()/z;
         if(L.length() % z == 0) tally_len--;
-        
-        # pragma omp parallel for
+    
+        vector<int>::iterator it; 
+        # pragma omp parallel for private(it)
         for(int j = 0; j < 256; j++)
         {
             tally[j].resize( tally_len );
             tally[j].shrink_to_fit();
             // init tally
-            for(auto& i: tally[j])
-                i = 0;
+            //for(auto& i: tally[j])
+            //    i = 0;
+            # pragma omp parallel for
+            for(it=tally[j].begin();it<tally[j].end();it++)
+                *it=0;
         }
 
         tally[ L[0] ][0]++;
@@ -85,8 +89,12 @@ class Aligner
         }
 
         // build F
-        for(int i : s)
-            F[i]++;
+        //for(int i : s)
+        //    F[i]++;
+        # pragma omp parallel for
+        for(it = s.begin(); it< s.end(); it++)
+            # pragma omp atomic
+            F[*it]++;
 
         for(int i = 1; i<256; i++)
         {
@@ -117,10 +125,11 @@ class Aligner
     {
         int r = i%z, off = 0;
         int base = i-r+1;
-        # pragma omp parallel for
-        for(int j = 0; j < r; j++)
+        # pragma omp parallel for reduction(+:off)
+        for(int j = 0; j < r; j++){
             if( ch == L[ base+j ])
                 off++;
+        }
         return off;
     }
 
