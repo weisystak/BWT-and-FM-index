@@ -12,7 +12,16 @@ file(COPY
   )
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_CXX_FLAGS  "-std=c++17")
+#[[set(CMAKE_CXX_FLAGS  "-std=c++17")]]
 project(Aligner_test)
 add_executable(Aligner_test unit_test/Aligner_test.cpp)
 target_link_libraries(Aligner_test gtest pthread gtest_main)
+
+if (NOT DEFINED ${CMAKE_CXX_FLAGS})
+    SET (CMAKE_CXX_FLAGS "-Wall -O3 -std=c++17")
+    find_package(OpenMP)
+    if (OPENMP_FOUND)
+        SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    endif()
+endif()
+MESSAGE(STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
